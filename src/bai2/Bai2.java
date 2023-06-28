@@ -1,11 +1,20 @@
 package bai2;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.openqa.selenium.By;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
@@ -77,41 +86,74 @@ public class Bai2 {
 		
 	}
 	
+	private static final int FIRST_NAME_COLUMN_INDEX = 0;
+	private static final int LAST_NAME_COLUMN_INDEX = 1;
+	private static final int EMAIL_COLUMN_INDEX = 2;
+	private static final int PASSWORD_COLUMN_INDEX = 3;
+	
 	private static List<User> generateListUserToRegister(){
 		List<User> lstUser = new ArrayList<User>();
-		User user1 = new User();
-		user1.setFirstName("Vu");
-		user1.setLastName("Nguyen");
-		user1.setEmail("nguyen@gmail.com");
-		user1.setPassword("123456789");
-		
-		lstUser.add(user1);
-		
-		User user2 = new User();
-		user2.setFirstName("Tran");
-		user2.setLastName("Ngoc");
-		user2.setEmail("ngoc@gmail.com");
-		user2.setPassword("123456789");
-		
-		lstUser.add(user2);
-		
-		User user3 = new User();
-		user3.setFirstName("Nguyen");
-		user3.setLastName("Toan");
-		user3.setEmail("toan@gmail.com");
-		user3.setPassword("123456789");
-		
-		lstUser.add(user3);
-		
-		User user4 = new User();
-		user4.setFirstName("Nguyen");
-		user4.setLastName("Hieu");
-		user4.setEmail("hieu@gmail.com");
-		user4.setPassword("123456789");
-		
-		lstUser.add(user4);
-		
+
+		try {
+			String path = "C:\\data\\user-datas.xlsx";
+			// Đọc Excel
+			InputStream inputStream = new FileInputStream(new File(path));
+			
+			Workbook workbook = getWorkbook(inputStream, path);
+			
+			Sheet sheet = workbook.getSheetAt(0);
+			Iterator<Row> iterator = sheet.iterator();
+
+			while(iterator.hasNext()) {
+				Row currentRow = iterator.next();
+				// Check if current row is header => skip to next row
+				if(currentRow.getRowNum() == 0) {
+					continue;
+				}
+				
+				Iterator<Cell> cells = currentRow.cellIterator();
+				
+				User user = new User();
+				while(cells.hasNext()) {
+					Cell currentCell = cells.next();
+					
+					int index = currentCell.getColumnIndex();
+					
+					switch (index) {
+						case FIRST_NAME_COLUMN_INDEX:
+							user.setFirstName(currentCell.getStringCellValue());
+							break;
+						case LAST_NAME_COLUMN_INDEX:
+							user.setLastName(currentCell.getStringCellValue());
+							break;
+						case EMAIL_COLUMN_INDEX:
+							user.setEmail(currentCell.getStringCellValue());
+							break;
+						case PASSWORD_COLUMN_INDEX:
+							user.setPassword(currentCell.getStringCellValue());
+							break;
+					}
+				}
+				lstUser.add(user);
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 		return lstUser;
 	}
 
+	// Get Workbook
+    private static Workbook getWorkbook(InputStream inputStream, String excelFilePath) throws IOException {
+        Workbook workbook = null;
+        if (excelFilePath.endsWith("xlsx")) {
+            workbook = new XSSFWorkbook(inputStream);
+        } else if (excelFilePath.endsWith("xls")) {
+            workbook = new HSSFWorkbook(inputStream);
+        } else {
+            throw new IllegalArgumentException("The specified file is not Excel file");
+        }
+ 
+        return workbook;
+    }
 }
