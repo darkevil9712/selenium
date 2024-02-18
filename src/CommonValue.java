@@ -1,5 +1,5 @@
 
 public class CommonValue {
 	public static String USERNAME = "nguyenvu";
-	public static String KEY = "keycode";
+	public static String KEY = "123key";
 }
