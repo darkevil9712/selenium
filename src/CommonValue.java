@@ -1,5 +1,5 @@
 
 public class CommonValue {
 	public static String USERNAME = "nguyenvu";
-	public static String PASSWORD = "456";
+	public static String PASSWORD = "123";
 }
